@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { uploadFile } from "@/utils/api";
@@ -42,29 +40,44 @@ const UploadForm: React.FC<UploadFormProps> = ({ onUploadSuccess }) => {
 
     return (
         <form onSubmit={handleSubmit} style={styles.form}>
-            <div {...getRootProps()} style={styles.dropZone}>
+            <div {...getRootProps()} style={styles.dropZone as React.CSSProperties}>
                 <input {...getInputProps()} />
                 {previewUrl ? (
                     <Image
                         src={previewUrl}
                         alt="Preview"
-                        layout="fill"
-                        objectFit="cover"
+                        width={300}
+                        height={300}
+                        style={{ objectFit: "cover", borderRadius: "10px" }}
                     />
                 ) : (
-                    <p style={styles.placeholder}>
+                    <p style={styles.placeholder as React.CSSProperties}>
                         Drag & drop a file here, or click to select a file
                     </p>
                 )}
             </div>
-            <button type="submit" style={styles.uploadButton} disabled={!file}>
+            {file && (
+                <p style={styles.fileName as React.CSSProperties}>
+                    Selected file: <strong>{file.name}</strong>
+                </p>
+            )}
+            <button
+                type="submit"
+                style={{
+                    ...styles.uploadButton,
+                    ...(file
+                        ? {}
+                        : { backgroundColor: "#ccc", cursor: "not-allowed" }),
+                }}
+                disabled={!file}
+            >
                 Upload
             </button>
         </form>
     );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
     form: {
         display: "flex",
         flexDirection: "column",
@@ -87,6 +100,11 @@ const styles = {
         color: "#888",
         textAlign: "center",
     },
+    fileName: {
+        marginTop: "10px",
+        color: "#333",
+        fontSize: "0.9rem",
+    },
     uploadButton: {
         marginTop: "20px",
         backgroundColor: "#4CAF50",
@@ -96,8 +114,8 @@ const styles = {
         borderRadius: "5px",
         cursor: "pointer",
         fontSize: "1rem",
+        transition: "background-color 0.3s",
     },
 };
 
 export default UploadForm;
-

@@ -77,17 +77,16 @@ const FileList = () => {
     );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
     container: {
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "column" as const, // 型エラーを防ぐため `as const`
         alignItems: "center",
         padding: "20px",
     },
     title: {
-        fontSize: "2rem",
+        fontSize: "1.5rem",
         marginBottom: "20px",
-        fontWeight: "bold",
     },
     cardGrid: {
         display: "grid",
@@ -105,32 +104,18 @@ const styles = {
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         cursor: "pointer",
         position: "relative",
-        transition: "transform 0.3s ease",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "center",
     },
-    cardHover: {
-        transform: "scale(1.05)",
-    },
-    fileName: {
-        fontWeight: "bold",
-        color: "#007bff",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        width: "100%",
-        marginBottom: "10px",
-    },
+    fileName: { fontWeight: "bold", color: "#007bff" },
     deleteButton: {
         backgroundColor: "#ff4d4f",
         color: "white",
         border: "none",
-        padding: "8px 12px",
+        padding: "5px 10px",
         borderRadius: "5px",
         cursor: "pointer",
-        marginTop: "10px",
+        position: "absolute",
+        bottom: "10px",
+        right: "10px",
     },
     previewOverlay: {
         position: "fixed",
@@ -144,11 +129,7 @@ const styles = {
         alignItems: "center",
         zIndex: 1000,
     },
-    previewImage: {
-        maxWidth: "90%",
-        maxHeight: "90%",
-        borderRadius: "10px",
-    },
+    previewImage: { maxWidth: "80%", maxHeight: "80%" },
 };
 
 export default FileList;
