@@ -31,6 +31,7 @@ const FileList = () => {
             } catch {
                 alert("Failed to delete file.");
             }
+
         }
     };
 

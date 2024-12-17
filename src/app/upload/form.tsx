@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { uploadFile } from "@/utils/api";
+import Image from "next/image";
 
 const UploadForm = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -12,7 +13,7 @@ const UploadForm = () => {
             const selectedFile = event.target.files[0];
             setFile(selectedFile);
 
-            // プレビューURL生成
+            // 画像プレビューURL生成
             const fileUrl = URL.createObjectURL(selectedFile);
             setPreviewUrl(fileUrl);
         }
@@ -28,32 +29,35 @@ const UploadForm = () => {
             setFile(null);
             setPreviewUrl(null);
         } catch {
-            alert("Upload failed");
+            alert("Failed to upload file");
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.uploadBox} onClick={() => document.getElementById("fileInput")?.click()}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ border: "2px dashed #4CAF50", width: "300px", height: "200px", position: "relative" }}>
                 {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" style={styles.previewImage} />
+                    <Image
+                        src={previewUrl}
+                        alt="Preview"
+                        layout="fill"
+                        objectFit="cover"
+                    />
                 ) : (
-                    <p style={styles.text}>Choose a file to upload</p>
+                    <p style={{ textAlign: "center", marginTop: "50px", color: "#888" }}>
+                        Choose a file to upload
+                    </p>
                 )}
-                <input id="fileInput" type="file" onChange={handleFileChange} style={styles.fileInput} />
+                <input
+                    type="file"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                    id="fileInput"
+                />
             </div>
-            <button type="submit" style={styles.submitButton}>Submit</button>
+            <button type="submit" style={{ marginTop: "20px" }}>Upload</button>
         </form>
     );
-};
-
-const styles = {
-    form: { display: "flex", flexDirection: "column", alignItems: "center" },
-    uploadBox: { border: "2px dashed #4CAF50", borderRadius: "12px", width: "300px", height: "200px" },
-    previewImage: { width: "100%", height: "100%", objectFit: "cover" },
-    text: { textAlign: "center", marginTop: "50px", color: "#888" },
-    fileInput: { display: "none" },
-    submitButton: { marginTop: "20px", padding: "10px 20px", backgroundColor: "#4CAF50", color: "white", border: "none" }
 };
 
 export default UploadForm;
