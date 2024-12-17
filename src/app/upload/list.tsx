@@ -28,11 +28,12 @@ const FileList = () => {
                 await deleteFile(fileName);
                 fetchFiles(); // 削除後にリストを再取得
                 alert("File deleted successfully.");
-            } catch (error) {
+            } catch {
                 alert("Failed to delete file.");
             }
         }
     };
+
 
     useEffect(() => {
         fetchFiles();
