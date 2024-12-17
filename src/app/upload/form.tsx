@@ -1,30 +1,37 @@
 "use client";
 
 import React, { useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { uploadFile } from "@/utils/api";
 import Image from "next/image";
 
-const UploadForm = () => {
-    const [file, setFile] = useState<File | null>(null);
+interface UploadFormProps {
+    onUploadSuccess: (newFile: { file_name: string; file_url: string }) => void;
+}
+
+const UploadForm: React.FC<UploadFormProps> = ({ onUploadSuccess }) => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [file, setFile] = useState<File | null>(null);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            const selectedFile = event.target.files[0];
-            setFile(selectedFile);
-
-            // 画像プレビューURL生成
-            const fileUrl = URL.createObjectURL(selectedFile);
-            setPreviewUrl(fileUrl);
-        }
+    const onDrop = (acceptedFiles: File[]) => {
+        const selectedFile = acceptedFiles[0];
+        setFile(selectedFile);
+        setPreviewUrl(URL.createObjectURL(selectedFile));
     };
+
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: { "image/*": [] },
+        maxFiles: 1,
+    });
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!file) return;
 
         try {
-            await uploadFile(file);
+            const uploadedFile = await uploadFile(file);
+            onUploadSuccess(uploadedFile);
             alert("File uploaded successfully");
             setFile(null);
             setPreviewUrl(null);
@@ -34,8 +41,9 @@ const UploadForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={{ border: "2px dashed #4CAF50", width: "300px", height: "200px", position: "relative" }}>
+        <form onSubmit={handleSubmit} style={styles.form}>
+            <div {...getRootProps()} style={styles.dropZone}>
+                <input {...getInputProps()} />
                 {previewUrl ? (
                     <Image
                         src={previewUrl}
@@ -44,20 +52,52 @@ const UploadForm = () => {
                         objectFit="cover"
                     />
                 ) : (
-                    <p style={{ textAlign: "center", marginTop: "50px", color: "#888" }}>
-                        Choose a file to upload
+                    <p style={styles.placeholder}>
+                        Drag & drop a file here, or click to select a file
                     </p>
                 )}
-                <input
-                    type="file"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                    id="fileInput"
-                />
             </div>
-            <button type="submit" style={{ marginTop: "20px" }}>Upload</button>
+            <button type="submit" style={styles.uploadButton} disabled={!file}>
+                Upload
+            </button>
         </form>
     );
 };
 
+const styles = {
+    form: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        marginBottom: "20px",
+    },
+    dropZone: {
+        border: "2px dashed #4CAF50",
+        borderRadius: "10px",
+        width: "300px",
+        height: "300px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+        cursor: "pointer",
+        overflow: "hidden",
+    },
+    placeholder: {
+        color: "#888",
+        textAlign: "center",
+    },
+    uploadButton: {
+        marginTop: "20px",
+        backgroundColor: "#4CAF50",
+        color: "white",
+        border: "none",
+        padding: "10px 20px",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontSize: "1rem",
+    },
+};
+
 export default UploadForm;
+

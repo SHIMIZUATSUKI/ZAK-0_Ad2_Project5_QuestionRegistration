@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getFiles, deleteFile } from "@/utils/api";
+import UploadForm from "./form";
 
 interface File {
     file_name: string;
@@ -10,6 +11,7 @@ interface File {
 
 const FileList = () => {
     const [files, setFiles] = useState<File[]>([]);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const fetchFiles = async () => {
         const data = await getFiles();
@@ -17,24 +19,26 @@ const FileList = () => {
     };
 
     const handleDelete = async (fileName: string) => {
-        // 確認ダイアログを表示
         const confirmDelete = window.confirm(
             `Are you sure you want to delete "${fileName}"?`
         );
-
-        // ユーザーがOKを押した場合のみ削除処理を実行
         if (confirmDelete) {
             try {
                 await deleteFile(fileName);
-                fetchFiles(); // 削除後にリストを再取得
-                alert("File deleted successfully.");
+                setFiles(files.filter((file) => file.file_name !== fileName));
             } catch {
                 alert("Failed to delete file.");
             }
-
         }
     };
 
+    const handlePreview = (fileUrl: string) => {
+        setPreviewUrl(fileUrl);
+    };
+
+    const handleNewFile = (newFile: File) => {
+        setFiles((prevFiles) => [newFile, ...prevFiles]);
+    };
 
     useEffect(() => {
         fetchFiles();
@@ -42,65 +46,82 @@ const FileList = () => {
 
     return (
         <div style={styles.container}>
-            <h2 style={styles.title}>ファイルをアップロード</h2>
-            <ul style={styles.list}>
+            <h2 style={styles.title}>Uploaded Files</h2>
+            <UploadForm onUploadSuccess={handleNewFile} />
+            <div style={styles.cardGrid}>
                 {files.map((file) => (
-                    <li key={file.file_name} style={styles.listItem}>
-                        <span>
-                            <a
-                                href={file.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={styles.link}
-                            >
-                                {file.file_name}
-                            </a>
-                        </span>
+                    <div
+                        key={file.file_name}
+                        style={styles.card}
+                        onClick={() => handlePreview(file.file_url)}
+                    >
+                        <span style={styles.fileName}>{file.file_name}</span>
                         <button
-                            onClick={() => handleDelete(file.file_name)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(file.file_name);
+                            }}
                             style={styles.deleteButton}
                         >
                             削除
                         </button>
-                    </li>
+                    </div>
                 ))}
-            </ul>
+            </div>
+            {previewUrl && (
+                <div style={styles.previewOverlay} onClick={() => setPreviewUrl(null)}>
+                    <img src={previewUrl} alt="Preview" style={styles.previewImage} />
+                </div>
+            )}
         </div>
     );
 };
 
-// CSS-in-JSスタイル設定
 const styles = {
     container: {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        marginTop: "20px",
+        padding: "20px",
     },
     title: {
-        fontSize: "1.5rem",
-        marginBottom: "10px",
+        fontSize: "2rem",
+        marginBottom: "20px",
+        fontWeight: "bold",
     },
-    list: {
-        listStyleType: "none",
-        padding: 0,
+    cardGrid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+        gap: "20px",
+        width: "100%",
+        maxWidth: "1200px",
     },
-    listItem: {
+    card: {
+        backgroundColor: "#fff",
+        border: "1px solid #ddd",
+        borderRadius: "10px",
+        padding: "10px",
+        textAlign: "center",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        cursor: "pointer",
+        position: "relative",
+        transition: "transform 0.3s ease",
         display: "flex",
+        flexDirection: "column",
         justifyContent: "space-between",
         alignItems: "center",
-        width: "100%",
-        maxWidth: "600px",
-        marginBottom: "10px",
-        padding: "10px",
-        backgroundColor: "#f9f9f9",
-        borderRadius: "8px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
     },
-    link: {
-        color: "#007bff",
-        textDecoration: "none",
+    cardHover: {
+        transform: "scale(1.05)",
+    },
+    fileName: {
         fontWeight: "bold",
+        color: "#007bff",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        width: "100%",
+        marginBottom: "10px",
     },
     deleteButton: {
         backgroundColor: "#ff4d4f",
@@ -109,7 +130,24 @@ const styles = {
         padding: "8px 12px",
         borderRadius: "5px",
         cursor: "pointer",
-        transition: "background-color 0.3s",
+        marginTop: "10px",
+    },
+    previewOverlay: {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+    },
+    previewImage: {
+        maxWidth: "90%",
+        maxHeight: "90%",
+        borderRadius: "10px",
     },
 };
 
