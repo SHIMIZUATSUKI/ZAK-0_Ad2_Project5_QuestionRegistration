@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:8000"; // FastAPIのエンドポイント
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://127.0.0.1:8000"; // デフォルトはローカルURL
+
 
 export const getFiles = async () => {
     const response = await axios.get(`${BASE_URL}/files/`);
